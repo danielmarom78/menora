@@ -11,13 +11,13 @@ if [ -z "$dept" ] || [ -z "$proj" ] || [ -z "$app" ]|| [ -z "$MENORA_GIT_TOKEN" 
     exit 1
 fi
 
-source_repo=https://github.com/danielmarom78/menora.git
+source_repo=https://github.com/danielmarom78/menora24.git
 source_branch=main
 source_chart_path=Application
 source_dept_values_path=Application/$dept
 source_values_files_path=Application/$dept/$proj/$app/prd
 
-target_repo=https://github.com/danielmarom78/menora.git
+target_repo=https://github.com/danielmarom78/menora24.git
 target_branch=Production
 target_app_path=/$dept/$proj/$app
 

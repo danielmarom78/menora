@@ -9,7 +9,7 @@ spec:
     server: 'https://kubernetes.default.svc'
   source:
     path: INFRA/argo/
-    repoURL: 'https://github.com/danielmarom78/menora.git'
+    repoURL: 'https://github.com/danielmarom78/menora24.git'
     targetRevision: devops
   sources: []
   project: default

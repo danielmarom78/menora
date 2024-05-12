@@ -8,7 +8,7 @@ metadata:
 spec:
   generators:
   - git:
-      repoURL: https://github.com/danielmarom78/menora.git
+      repoURL: https://github.com/danielmarom78/menora24.git
       revision: main
       files:
       - path: 'Application/{{.Values.departmentName}}/*/*/{{.Values.targetEnvironment}}/values-*.yaml' # Application/depName/projName/appName/enviroment/values-appName.yaml  
@@ -22,7 +22,7 @@ spec:
     spec:
       project: default
       source:
-        repoURL: https://github.com/danielmarom78/menora.git
+        repoURL: https://github.com/danielmarom78/menora24.git
         targetRevision: main
         path: {{ printf "'{{path[0]}}'" }}
         helm:

@@ -8,12 +8,12 @@ if [ -z "$MENORA_GIT_TOKEN" ]; then
     exit 1
 fi
 
-source_repo=https://github.com/danielmarom78/menora.git
+source_repo=https://github.com/danielmarom78/menora24.git
 source_branch=main
 source_chart_path=Application
 source_dept_values_path=Application
 
-target_repo=https://github.com/danielmarom78/menora.git
+target_repo=https://github.com/danielmarom78/menora24.git
 target_branch=Production
 
 yaml_path_app_name=pipeline.appName

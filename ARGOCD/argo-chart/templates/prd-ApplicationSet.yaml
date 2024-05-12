@@ -8,7 +8,7 @@ metadata:
 spec:
   generators:
   - git:
-      repoURL: https://github.com/danielmarom78/menora.git
+      repoURL: https://github.com/danielmarom78/menora24.git
       revision: Production
       directories:
       - path: "{{.Values.departmentName}}/*/*/*/*" #example: depName/projName/appName/namespace/service/ 
@@ -24,7 +24,7 @@ spec:
     spec:
       project: default
       source:
-        repoURL: https://github.com/danielmarom78/menora.git
+        repoURL: https://github.com/danielmarom78/menora24.git
         targetRevision: Production
         path: {{printf "'{{path}}'"}}
       destination:
