@@ -1,9 +1,0 @@
-targetArgoName: gitops-int-dept1
-targetArgoProject: default
-targetArgoManagedNamespaces:
-  - int-app1-namespace
-  - int-app2-namespace
-targetArgoRBACPolicy: |
-      g, system:cluster-admins, role:admin
-      g, cluster-admins, role:admin
-      g, gitops-admins, role:admin

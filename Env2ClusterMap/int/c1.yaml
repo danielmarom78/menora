@@ -1,3 +1,0 @@
-targetCluster: 'https://api.cluster-vjbp5.dynamic.redhatworkshops.io:6443'
-targetClusterAddress: 'apps.cluster-vjbp5.dynamic.redhatworkshops.io'
-targetClusterName: c1

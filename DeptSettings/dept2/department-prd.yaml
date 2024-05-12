@@ -1,9 +1,0 @@
-targetArgoName: gitops-prd-dept2
-targetArgoProject: default
-targetArgoManagedNamespaces:
-  - prd-app3-namespace
-  - prd-app4-namespace
-targetArgoRBACPolicy: |
-      g, system:cluster-admins, role:admin
-      g, cluster-admins, role:admin
-      g, gitops-admins, role:admin

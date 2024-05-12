@@ -1,9 +1,0 @@
-targetArgoName: gitops-qa-dept2
-targetArgoProject: default
-targetArgoManagedNamespaces:
-  - qa-app3-namespace
-  - qa-app4-namespace
-targetArgoRBACPolicy: |
-      g, system:cluster-admins, role:admin
-      g, cluster-admins, role:admin
-      g, gitops-admins, role:admin
