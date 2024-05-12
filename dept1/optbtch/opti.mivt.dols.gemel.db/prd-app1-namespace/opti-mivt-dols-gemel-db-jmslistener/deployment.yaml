@@ -1,0 +1,78 @@
+---
+# Source: proxy-chart/charts/application/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: release-name-opti-mivt-dols-gemel-db-jmslistener
+  labels:
+    app: release-name-opti-mivt-dols-gemel-db-jmslistener
+    app.kubernetes.io/name: opti-mivt-dols-gemel-db-jmslistener
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+    package-name: opti-mivt-dols-gemel-db-jmslistener-binprd
+spec:
+  replicas: 10
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: opti-mivt-dols-gemel-db-jmslistener
+      app.kubernetes.io/instance: release-name
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: opti-mivt-dols-gemel-db-jmslistener
+        app.kubernetes.io/instance: release-name
+    spec:
+      
+      serviceAccountName: release-name-opti-mivt-dols-gemel-db-jmslistener
+      securityContext:
+        {}
+      containers:
+        - name: release-name
+          securityContext:
+            {}
+          env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.podIP
+          envFrom:
+          - configMapRef:
+              name: opti-mivt-dols-gemel-db-jmslistener-cm
+          - secretRef:
+              name: opti-mivt-dols-gemel-db-jmslistener-secret
+          image: "quay.io/thason/gitops-demo:e28dc8ebfb4934cf1362f87285ebb7c2f1faf4cf"          
+          imagePullPolicy: IfNotPresent
+          args:
+                        - sleep
+                        - infinity
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+
+          resources:
+            limits:
+              cpu: 800m
+              memory: 100Mi
+            requests:
+              cpu: 100m
+              memory: 100Mi
+          volumeMounts:
+
+      volumes:
+      # Adding host name aliases mostly for dmz environment.
+      hostAliases:
+        - hostnames:
+          - vault-k8s.menora.co.il
+          ip: x.x.x.x

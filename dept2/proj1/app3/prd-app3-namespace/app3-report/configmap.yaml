@@ -1,0 +1,19 @@
+---
+# Source: proxy-chart/charts/application/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app3-report-cm
+
+data:
+  ELK_LOGGER_LOGSTASH_TAM_URL: "isc-logstash-tam:9300"
+  MINIO_ACCESS_KEY: "rrrrrrrrrrrrrrr"
+  MINIO_ADDRESS: "minio-bin.bin-data"
+  MINIO_PORT: "9000"
+  MINIO_SECRET_KEY: "ttttttttttttttt"
+  MINIO_SSL: "false"
+  MONGO_ADDRESS: "isc-mongo-0:27017,isc-mongo-1:27017,isc-mongo-2:27017"
+  PORT: "3000"
+
+  ENVIRONMENT: "prd"
+  ENV_CONFIG: "prod"

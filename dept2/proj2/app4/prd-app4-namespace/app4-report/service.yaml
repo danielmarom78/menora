@@ -1,0 +1,22 @@
+---
+# Source: proxy-chart/charts/application/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: release-name-app4-report
+  labels:
+    app: release-name-app4-report
+    app.kubernetes.io/name: app4-report
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+    package-name: app4-report-binprd
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3000
+      targetPort: 3000
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: app4-report
+    app.kubernetes.io/instance: release-name

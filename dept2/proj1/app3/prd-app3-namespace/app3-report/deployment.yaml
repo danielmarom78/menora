@@ -1,0 +1,78 @@
+---
+# Source: proxy-chart/charts/application/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: release-name-app3-report
+  labels:
+    app: release-name-app3-report
+    app.kubernetes.io/name: app3-report
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+    package-name: app3-report-binprd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: app3-report
+      app.kubernetes.io/instance: release-name
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: app3-report
+        app.kubernetes.io/instance: release-name
+    spec:
+      
+      serviceAccountName: release-name-app3-report
+      securityContext:
+        {}
+      containers:
+        - name: release-name
+          securityContext:
+            {}
+          env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.podIP
+          envFrom:
+          - configMapRef:
+              name: app3-report-cm
+          - secretRef:
+              name: app3-report-secret
+          image: "quay.io/thason/gitops-demo:e28dc8ebfb4934cf1362f87285ebb7c2f1faf4cf"          
+          imagePullPolicy: IfNotPresent
+          args:
+                        - sleep
+                        - infinity
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+
+          resources:
+            limits:
+              cpu: 600m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+          volumeMounts:
+
+      volumes:
+      # Adding host name aliases mostly for dmz environment.
+      hostAliases:
+        - hostnames:
+          - vault-k8s.menora.co.il
+          ip: x.x.x.x

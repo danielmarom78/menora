@@ -1,0 +1,30 @@
+---
+# Source: proxy-chart/charts/application/templates/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: release-name-app2-report
+  labels:
+    helm.sh/chart: application-1.0.9
+    app.kubernetes.io/name: app2-report
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "appversion"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    cert-manager.io/cluster-issuer: cluster-ca-issuer
+spec:
+  tls:
+    - hosts:
+        - "app2-report-binprd.menora.co.il"
+      secretName: app2-report-binprd-tls
+  rules:
+  - host: "app2-report-binprd.menora.co.il"
+    http:
+      paths:
+      - backend:
+          service:
+            name: release-name-app2-report
+            port:
+              number: 3000
+        path: /
+        pathType: ImplementationSpecific
