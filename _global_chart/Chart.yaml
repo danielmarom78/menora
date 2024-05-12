@@ -1,6 +1,0 @@
-apiVersion: v2
-appVersion: appversion
-description: Menora core chart
-name: global-chart
-type: application
-version: 1.0.9

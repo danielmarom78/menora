@@ -1,0 +1,3 @@
+targetCluster: 'https://api.cluster-mptt4.dynamic.redhatworkshops.io:6443'
+targetClusterAddress: 'apps.cluster-mptt4.dynamic.redhatworkshops.io'
+targetClusterName: c2

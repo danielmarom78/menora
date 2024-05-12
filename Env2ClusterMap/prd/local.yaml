@@ -1,0 +1,3 @@
+targetCluster: 'https://kubernetes.default.svc'
+targetClusterAddress: 'apps.cluster-bgszb.dynamic.redhatworkshops.io'
+targetClusterName: local

@@ -1,0 +1,12 @@
+{{- $targetArgoName := .Values.targetArgoName }}
+{{- range .Values.targetArgoManagedNamespaces }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ . }}
+  annotations:
+    argocd.argoproj.io/sync-wave: '-99'
+  labels:
+    argocd.argoproj.io/managed-by: {{ $targetArgoName }}
+---
+{{- end }}

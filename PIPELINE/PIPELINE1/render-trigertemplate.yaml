@@ -1,0 +1,21 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: render-triggertemplate
+spec:
+  params:
+  - name: proj
+  - name: app
+  resourcetemplates:
+  - apiVersion: tekton.dev/v1beta1
+    kind: PipelineRun
+    metadata:
+      generateName: render-pipelinerun-
+    spec:
+      pipelineRef:
+        name: render-pipeline
+      params:
+      - name: proj
+        value: $(tt.params.proj)
+      - name: app
+        value: $(tt.params.app)

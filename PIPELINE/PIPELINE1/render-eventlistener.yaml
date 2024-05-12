@@ -1,0 +1,11 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: render-eventlistener
+spec:
+  triggers:
+  - name: render-trigger
+    bindings:
+    - ref: render-triggerbinding
+    template:
+      ref: render-triggertemplate

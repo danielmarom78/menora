@@ -1,0 +1,54 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: env-appset
+  namespace: openshift-gitops
+spec:
+  generators:
+  - matrix:
+      generators:
+      - git: # generator for cluster 
+          repoURL: https://github.com/danielmarom78/menora.git
+          revision: devops
+          files:
+          - path: "Env2ClusterMap/*/*.yaml" 
+          pathParamPrefix: cluster 
+          values:
+            targetEnvironment: '{{cluster.path[1]}}'      
+      - git: # generator for argo
+          repoURL: https://github.com/danielmarom78/menora.git
+          revision: devops
+          pathParamPrefix: argo  
+          files:
+          - path: "DeptSettings/*/department-{{values.targetEnvironment}}.yaml" 
+          values:
+            departmentName: '{{argo.path[1]}}'
+  template:
+    metadata:
+      name: '1-envdeploy-cluster.{{targetClusterName}}-env.{{values.targetEnvironment}}-dept.{{values.departmentName}}'   
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/danielmarom78/menora.git
+        targetRevision: devops
+        path: 'ARGOCD/argo-chart'
+        helm:
+          valueFiles:
+          - '../../DeptSettings/{{values.departmentName}}/department-{{values.targetEnvironment}}.yaml'
+          values: |
+            departmentName: '{{values.departmentName}}'
+            targetEnvironment: '{{values.targetEnvironment}}'
+            targetClusterAddress: '{{targetClusterAddress}}'
+      destination:
+        server: '{{targetCluster}}'
+        namespace: '{{targetArgoName}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true 
+          - FailOnSharedResource=false  
+        managedNamespaceMetadata:
+          labels: 
+            argocd.argoproj.io/managed-by: openshift-gitops

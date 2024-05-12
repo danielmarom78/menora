@@ -1,0 +1,10 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: render-triggerbinding
+spec:
+  params:
+  - name: proj
+    value: $(body.proj)
+  - name: app
+    value: $(body.app)

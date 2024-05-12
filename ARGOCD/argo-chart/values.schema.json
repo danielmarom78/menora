@@ -1,0 +1,41 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Values",
+    "type": "object",
+    "properties": {
+        "targetClusterAddress": {
+            "type": "string",
+            "description": "The target cluster"
+        },
+        "targetEnvironment": {
+            "type": "string",
+            "description": "The target deployment environment",
+            "enum": ["int", "qa", "prd"]
+        },
+        "targetArgoName": {
+            "type": "string",
+            "description": "The Kubernetes namespace where ArgoCD is deployed"
+        },
+        "targetArgoProject": {
+            "type": "string",
+            "description": "The name of the project in ArgoCD"
+        },
+        "targetArgoRBACPolicy": {
+            "type": "string",
+            "description": "RBAC policy definitions for ArgoCD, specified as YAML-encoded strings"
+        },
+        "departmentName": {
+            "type": "string",
+            "description": "The name of the project, typically derived from the repository or folder name"
+        },
+        "targetArgoManagedNamespaces": {
+            "type": "array",
+            "description": "List of Kubernetes namespaces managed by ArgoCD",
+            "items": {
+                "type": "string",
+                "description": "Name of a Kubernetes namespace"
+            }
+        }
+    },
+    "required": ["targetEnvironment", "targetArgoName", "targetArgoProject", "targetArgoRBACPolicy", "departmentName", "targetArgoManagedNamespaces", "targetClusterAddress"]
+}

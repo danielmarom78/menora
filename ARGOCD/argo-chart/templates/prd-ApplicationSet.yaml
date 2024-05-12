@@ -1,0 +1,37 @@
+{{- if eq .Values.targetEnvironment "prd" }}
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: "3-appdeploy-env.{{.Values.targetEnvironment}}-dept.{{.Values.departmentName}}"
+  annotations:
+    argocd.argoproj.io/sync-wave: '50'
+spec:
+  generators:
+  - git:
+      repoURL: https://github.com/danielmarom78/menora.git
+      revision: Production
+      directories:
+      - path: "{{.Values.departmentName}}/*/*/*/*" #example: depName/projName/appName/namespace/service/ 
+      values:
+        deptName: {{.Values.departmentName}}
+        projName: {{printf "'{{path[1]}}'"}}   
+        appName: {{printf "'{{path[2]}}'"}}          
+        namespace: {{printf "'{{path[3]}}'"}} 
+        srvName: {{printf "'{{path[4]}}'"}}
+  template:
+    metadata:
+      name: {{ printf "'{{values.srvName}}-app'" }}          
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/danielmarom78/menora.git
+        targetRevision: Production
+        path: {{printf "'{{path}}'"}}
+      destination:
+        server: 'https://kubernetes.default.svc'
+        namespace: {{printf "'{{values.namespace}}'"}}
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true     
+  {{- end }}

@@ -1,0 +1,40 @@
+{{- if or (eq .Values.targetEnvironment "qa") (eq .Values.targetEnvironment "int") }}
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: "3-appdeploy-env.{{.Values.targetEnvironment}}-dept.{{.Values.departmentName}}"
+  annotations:
+    argocd.argoproj.io/sync-wave: '50'
+spec:
+  generators:
+  - git:
+      repoURL: https://github.com/danielmarom78/menora.git
+      revision: main
+      files:
+      - path: 'Application/{{.Values.departmentName}}/*/*/{{.Values.targetEnvironment}}/values-*.yaml' # Application/depName/projName/appName/enviroment/values-appName.yaml  
+      values:
+        depName: {{ printf "'{{path[1]}}'" }}  
+        projName: {{ printf "'{{path[2]}}'" }} 
+        envName: {{ printf "'{{path[4]}}'" }}
+  template:
+    metadata:
+      name: {{ printf "'{{pipeline.appName}}-app'" }}
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/danielmarom78/menora.git
+        targetRevision: main
+        path: {{ printf "'{{path[0]}}'" }}
+        helm:
+          valueFiles:
+            {{ printf "- '{{path[1] }}/{{path[2] }}/{{path[3] }}/{{path[4] }}/{{path.filename}}'" }}
+          values: |
+            application.deployenv: {{ printf "'{{ values.envName }}'" }}  
+      destination:
+        server: 'https://kubernetes.default.svc'
+        namespace:  {{ printf "'{{ pipeline.namespace }}'" }}
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true     
+  {{- end }}
