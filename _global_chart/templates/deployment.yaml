@@ -1,0 +1,254 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "demo.fullname" . }}
+  labels:
+    app: {{ include "demo.fullname" . }}
+    app.kubernetes.io/name: {{ include "demo.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    package-name: {{ .Values.PackageName }}
+  {{- if .Values.pipeline.extra.labels}}
+   {{- range $key, $value := .Values.pipeline.extra.labels }}
+    {{ $key }}: {{ $value | quote }}
+   {{- end }}
+  {{- end }}
+spec:
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
+  selector:
+    matchLabels:
+      {{- include "demo.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        {{- include "demo.selectorLabels" . | nindent 8 }}
+     {{- if .Values.pipeline.extra.labels }}
+      {{- range $key, $value := .Values.pipeline.extra.labels }}
+        {{ $key }}: {{ $value | quote }}
+      {{- end }}
+     {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      
+      serviceAccountName: {{ include "demo.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Release.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.podIP
+          envFrom:
+          {{- if .Values.configmap.enabled }}
+          - configMapRef:
+              name: {{ .Values.configmap.name }}
+          {{- end }}
+          {{- if .Values.secret.enabled }}
+          - secretRef:
+              name: {{ .Values.secret.name }}
+          {{- end }}
+          {{- if .Values.image.tagIsHash }}
+          image: "{{ .Values.image.repository }}@{{ .Values.image.tag | default .Chart.AppVersion }}"
+          {{- else }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          {{- end}}          
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.command_args }}
+          args: 
+          {{- range $arg := .Values.command_args }}
+                        - {{ $arg }}
+          {{- end }}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          {{- if .Values.livenessProbe.enabled }}    
+          livenessProbe:
+            httpGet:
+              path: '{{ .Values.livenessProbe.path }}'
+              port: {{ .Values.livenessProbe.port }}
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+            successThreshold: {{ .Values.livenessProbe.successThreshold }}
+           {{- end }}
+          {{- if .Values.readinessProbe.enabled }}
+          readinessProbe:
+            httpGet:
+              path: '{{ .Values.readinessProbe.path }}'
+              port: {{ .Values.readinessProbe.port }}
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+            successThreshold: {{ .Values.readinessProbe.successThreshold }}
+           {{- end }}
+
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+          {{- if .Values.certsecret -}}
+          {{- if .Values.certsecret.enabled }} 
+          - mountPath: /var/lib/tls
+            name: {{ .Values.certsecret.name }}
+          {{- end }}
+          {{- end }}  
+
+          {{- if .Values.Vault -}}
+          {{- if .Values.Vault.enabled }}
+          # - mountPath: /var/lib/tls
+          #   name: {{ .Values.Vault.secretName }}
+          - mountPath: /app/vault
+            name: vault-injection
+          {{- end }}
+          {{- end }}
+          
+          
+          {{- if .Values.Pvc -}}
+          {{- if .Values.Pvc.enabled }}
+          {{- if .Values.Pvc.path }}
+          - mountPath: {{ .Values.Pvc.path }}
+            name: {{ .Values.Pvc.name }}
+          {{- end }}
+          {{- end }}
+          {{- end }}
+
+      {{- if .Values.Vault -}}
+      {{- if .Values.Vault.enabled }}
+      initContainers:
+      - command:
+        - sh
+        - -c
+        - vault agent -config /consul-template/config/vault-retrieve.hcl -log-level=trace
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.podIP
+        - name: VAULT_ADDR
+          value: {{ .Values.Vault.VaultUrl }}
+        - name: VAULT_SKIP_VERIFY
+          value: "true"
+        - name: VAULT_NAMESPACE
+          value: {{ .Values.Vault.VaultNamespace }}
+        envFrom:
+        - configMapRef:
+            name: {{ .Values.Vault.configMapRef }}
+        image: {{ .Values.Vault.VaultImage }}
+        imagePullPolicy: IfNotPresent
+        name: vault-key-retriever-init
+        resources: {}
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 100
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        # - mountPath: /var/lib/tls
+        #   name: {{ .Values.Vault.secretName }}
+        - mountPath: /consul-template/data
+          name: vault-injection
+        - mountPath: /consul-template/config/vault-retrieve.hcl
+          name: vault-config-volume
+          subPath: vault-retrieve.hcl
+        - mountPath: /consul-template/config/consul-template.tpl
+          name: vault-config-volume
+          subPath: consul-template.tpl
+      securityContext: {}
+      serviceAccount: vault-account
+      serviceAccountName: vault-account
+      {{- end }}
+      {{- end }}
+      
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      volumes:
+      {{- if .Values.certsecret -}}
+      {{- if .Values.certsecret.enabled }}
+      - name: {{ .Values.certsecret.name }}
+        secret:
+          defaultMode: 256
+          secretName: {{ .Values.certsecret.name }}
+      {{- end}}
+      {{- end }}
+      
+      {{- if .Values.Pvc -}}
+      {{- if .Values.Pvc.enabled }}
+      - name: {{ .Values.Pvc.name }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.Pvc.claimName }}
+      {{- end}}
+      {{- end }}
+      
+      {{- if .Values.Vault -}}
+      {{- if .Values.Vault.enabled }}
+      - emptyDir: {}
+        name: vault-injection
+      - configMap:
+          defaultMode: 420
+          items:
+          - key: vault-retrieve.hcl
+            path: vault-retrieve.hcl
+          - key: consul-template.tpl
+            path: consul-template.tpl
+          name: {{ .Values.Vault.VolumeCmName }}
+        name: vault-config-volume
+      # - name: {{ .Values.Vault.secretName }}
+      #   secret:
+      #     defaultMode: 256
+      #     secretName: {{ .Values.Vault.secretName }}
+      {{- end }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      # Adding host name aliases mostly for dmz environment.
+      {{- with .Values.hostAliases }}
+      hostAliases:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
